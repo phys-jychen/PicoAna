@@ -56,6 +56,7 @@ Int_t Ana::GlobalFit(const string& file)
     h_QDC->Fit(f_multiGaus, "R", "", -100, 500);
     f_multiGaus->Draw("same");
     c1->Update();
+    cout << "----> Gaussian fitting finished!" << endl;
 
     TRootCanvas* rc1 = (TRootCanvas*) c1->GetCanvasImp();
     rc1->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
@@ -73,6 +74,7 @@ Int_t Ana::GlobalFit(const string& file)
     g_peak->SetTitle(";NPE;QDC [ns*mV]");
     g_peak->Draw("APE");
     c2->Update();
+    cout << "----> Linear fitting finished!" << endl;
 
     TRootCanvas* rc2 = (TRootCanvas*) c2->GetCanvasImp();
     rc2->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");

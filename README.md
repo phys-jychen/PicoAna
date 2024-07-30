@@ -25,7 +25,7 @@ iAna -a -p [path]    # 'a' stands for 'analyse'
 ```
 where `path` is the path to this directory. Then, a ROOT file with the same file name will be created in the same directory as the directory that contains all the CSV files. For event checking, the event ID has also been saved.
 
-Notice: this step is time-consuming, which requires a few minutes.
+**Notice:** this step is time-consuming, which requires a few minutes.
 
 ### Plotting of NPE (Number of Photo-Electrons) Histogram
 With the ROOT file created, we can plot the distribution of NPE. To do this, run
@@ -39,6 +39,8 @@ Or, if you want to save the histogram to another ROOT file, run
 iAna -d -p [file] -pe [pedestal_end] -ib [integral_begin] -ie [integral_end] -o [output_file]
 ```
 
+**Notice:** after changing the configuration (especially the SiPM and pre-amplifier), remember to modify `ADC_constant` in file `Convert.cpp`!
+
 ### Peak Finding and Global Fitting
 This is mainly used in single-photon calibration of SiPMs, using the output file from the above step. This can be done with
 ```shell
@@ -46,7 +48,7 @@ iAna -f -p [file]    # 'f' stands for 'fit'
 ```
 Then, two figures will be displayed, one for peak finding and Gaussian fitting (to be more precise, the sum of several Gaussian functions), and the other for linear fitting (to show the contribution per photon).
 
-Notice: due to unknown issues, the results might be different every time you run the above command, and sometimes plotting even fails. This is a bug to be fixed in the future…
+**Notice:** due to unknown issues, the results might be different every time you run the above command, and sometimes plotting even fails. This is a bug to be fixed in the future…
 
 ## Environment Set-up
 This project requires CMake version >= 3.16. Notice that different ROOT versions lead to different shapes of the histograms!
@@ -69,5 +71,11 @@ source <build_dir>/setup.sh
 
 By now, the compilation has finished. Prepare the data, and have fun! :relaxed:
 
+## Change Log
+
+### 30 July 2024
+
+Modified the conversion process, and made sure that all CSV files are converted to ROOT.
+
 ## To-Do
-The known bugs should be fixed, more functions might be added to this framework, and some existing functions need further check.
+The fitting should be carefully dealt with and some more functions might be added to this framework.

@@ -1,5 +1,8 @@
 # Directories
+bin/
 build/
 run/
+cmake*/
 
 # Files
+.clion*

@@ -1,5 +1,8 @@
 #include "Ana.h"
 
+// ADC constant, determined by the SiPM and pre-amplifier
+const Double_t ADC_constant = 124.6 / 19.41;
+
 Double_t Ana::GetADC(const vector<Double_t>& Time, const vector<Double_t>& Ch, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end)
 {
     assert(Time.size() == Ch.size());
@@ -61,7 +64,7 @@ Int_t Ana::Convert(const string& path)
     string temp_string;
     Double_t temp;
 
-    // Time
+    // Time and waveform
     for (Int_t i = 0; i < 3; ++i)
     {
         dirp = readdir(dp);
@@ -72,6 +75,10 @@ Int_t Ana::Convert(const string& path)
             DataFile.open(file_path + "/" + dirp->d_name);
             if (!DataFile)
                 continue;
+
+            const Int_t pos_id_begin = string(dirp->d_name).find_last_of('_') + 1;
+            const Int_t pos_id_end = string(dirp->d_name).find_last_of('.');
+            EventID = stoi(string(dirp->d_name).substr(pos_id_begin, pos_id_end - pos_id_begin));
 
             for (Int_t j = 0; j < skip_line; ++j)
             {
@@ -114,10 +121,43 @@ Int_t Ana::Convert(const string& path)
                 Time.emplace_back(temp * unit_Time);
                 getline(DataLine, temp_string);
                 is.clear();
+
+                // Channel 1
+                getline(DataLine, temp_string, ',');
+                is.str(temp_string);
+                is >> temp;
+                Ch1.emplace_back(temp * unit_Volt.at(0));
+                is.clear();
+
+                // Channel 2
+                getline(DataLine, temp_string, ',');
+                is.str(temp_string);
+                is >> temp;
+                Ch2.emplace_back(temp * unit_Volt.at(1));
+                is.clear();
+
+                // Channel 3
+                getline(DataLine, temp_string, ',');
+                is.str(temp_string);
+                is >> temp;
+                Ch3.emplace_back(temp * unit_Volt.at(2));
+                is.clear();
+
+                // Channel 4
+                getline(DataLine, temp_string);
+                is.str(temp_string);
+                is >> temp;
+                Ch4.emplace_back(temp * unit_Volt.at(3));
+                is.clear();
             }
 
             TimeInput->Fill();
             Time.clear();
+            DataInput->Fill();
+            Ch1.clear();
+            Ch2.clear();
+            Ch3.clear();
+            Ch4.clear();
             DataFile.close();
         }
     }
@@ -197,8 +237,6 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
 {
     gStyle->SetOptStat(1111);
 
-    const Double_t ADC_constant = 124.6 / 19.41;
-
     TFile* inputfile = new TFile((TString) file, "READ");
     TTree* timetree = inputfile->Get<TTree>("TimeInput");
     TTree* datatree = inputfile->Get<TTree>("DataInput");
@@ -229,6 +267,7 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
     h_QDC_Ch1->Draw();
 //    c1->Print((TString) file.substr(0, file.find_last_of('.')) + ".pdf");
     c1->Update();
+    cout << "---> NPE histogram plotted!" << endl;
 
     TRootCanvas* rc = (TRootCanvas*) c1->GetCanvasImp();
     rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");

@@ -24,13 +24,13 @@
 #include "TMath.h"
 #include "TString.h"
 #include "TCanvas.h"
+#include "TH1D.h"
+#include "TF1.h"
 #include "TRootCanvas.h"
 #include "TApplication.h"
-#include "TH1D.h"
 #include "TFitResultPtr.h"
 #include "TSpectrum.h"
 #include "TGraphErrors.h"
-#include "TF1.h"
 #include "TVirtualFitter.h"
 
 using namespace std;
