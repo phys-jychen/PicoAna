@@ -38,7 +38,10 @@ Int_t Ana::Convert(const string& path)
     const TString rootname = file_path + ".root";
 
     if (!(dp = opendir(path.c_str())))
-        cout << "Cannot open " << path << endl;
+    {
+        cout << "*** Path " << path << " does not exist!" << endl;
+        throw;
+    }
 
     TFile* rootfile = TFile::Open(rootname, "RECREATE");
     TTree* DataInput = new TTree("DataInput", "Waveform");
@@ -238,6 +241,12 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
     gStyle->SetOptStat(1111);
 
     TFile* inputfile = new TFile((TString) file, "READ");
+    if (inputfile->IsZombie())
+    {
+        inputfile->Close();
+        throw;
+    }
+
     TTree* timetree = inputfile->Get<TTree>("TimeInput");
     TTree* datatree = inputfile->Get<TTree>("DataInput");
 

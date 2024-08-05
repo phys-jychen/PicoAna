@@ -18,7 +18,12 @@ Int_t Ana::GlobalFit(const string& file)
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1111);
 
-    TFile* rootfile = TFile::Open((TString) file);
+    TFile* rootfile = new TFile((TString) file, "READ");
+    if (rootfile->IsZombie())
+    {
+        rootfile->Close();
+        throw;
+    }
     TH1D* h_QDC = rootfile->Get<TH1D>("h_QDC_Ch1");
 
     TApplication* app = new TApplication("app", nullptr, nullptr);

@@ -39,7 +39,7 @@ Or, if you want to save the histogram to another ROOT file, run
 iAna -d -p [file] -pe [pedestal_end] -ib [integral_begin] -ie [integral_end] -o [output_file]
 ```
 
-**Notice:** after changing the configuration (especially the SiPM and pre-amplifier), remember to modify `ADC_constant` in file `Convert.cpp`!
+**Notice:** after changing the configuration (especially the SiPM and pre-amplifier), remember to modify `ADC_constant` in file `Convert.cpp`! Besides, in some cases, you might also need to modify the lower and upper limits of the NPE histogram. This can also be done in `Convert.cpp`.
 
 ### Peak Finding and Global Fitting
 This is mainly used in single-photon calibration of SiPMs, using the output file from the above step. This can be done with
@@ -76,6 +76,10 @@ By now, the compilation has finished. Prepare the data, and have fun! :relaxed:
 ### 30 July 2024
 
 Modified the conversion process, and made sure that all CSV files are converted to ROOT.
+
+### 5 August 2024
+
+Added exception handling.
 
 ## To-Do
 The fitting should be carefully dealt with and some more functions might be added to this framework.

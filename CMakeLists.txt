@@ -6,7 +6,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Name and version of this project
-project(PicoAna VERSION 1.0.0 LANGUAGES C CXX)
+project(PicoAna VERSION 1.0.1 LANGUAGES C CXX)
 
 # Type of CMake
 set(CMAKE_BUILD_TYPE Debug)
