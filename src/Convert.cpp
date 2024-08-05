@@ -236,8 +236,20 @@ Int_t Ana::Convert(const string& path)
     return 0;
 }
 
-Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const string& output)
+Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const Double_t& histogram_begin, const Double_t& histogram_end, const string& output)
 {
+    if (integral_begin > integral_end)
+    {
+        cout << "Error in integral range! Make sure that end > begin!" << endl;
+        throw;
+    }
+
+    if (histogram_begin > histogram_end)
+    {
+        cout << "Error in histogram range! Make sure that end > begin!" << endl;
+        throw;
+    }
+
     gStyle->SetOptStat(1111);
 
     TFile* inputfile = new TFile((TString) file, "READ");
@@ -259,7 +271,7 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
 
     const Int_t EventNum = datatree->GetEntriesFast();
 
-    TH1D* h_QDC_Ch1 = new TH1D("h_QDC_Ch1", ";Number of PE;Entries", 200, 0., 0.);
+    TH1D* h_QDC_Ch1 = new TH1D("h_QDC_Ch1", ";Number of PE;Entries", 200, histogram_begin, histogram_end);
 
     for (Int_t i = 0; i < EventNum; ++i)
     {

@@ -79,7 +79,8 @@ Modified the conversion process, and made sure that all CSV files are converted 
 
 ### 5 August 2024
 
-Added exception handling.
+- Added exception handling.
+- Added two options for setting the range of the NPE histogram.
 
 ## To-Do
 The fitting should be carefully dealt with and some more functions might be added to this framework.
