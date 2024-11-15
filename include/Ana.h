@@ -42,7 +42,7 @@ class Ana
 public:
     static Int_t Convert(const string& path);
 
-    static Int_t Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const Double_t& histogram_begin, const Double_t& histogram_end, const string& output = "");
+    static Int_t Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const Int_t& histogram_nbins, const Double_t& histogram_begin, const Double_t& histogram_end, const string& output = "");
 
     static Int_t GlobalFit(const string& file);
 

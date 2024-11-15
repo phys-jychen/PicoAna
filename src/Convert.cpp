@@ -236,21 +236,25 @@ Int_t Ana::Convert(const string& path)
     return 0;
 }
 
-Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const Double_t& histogram_begin, const Double_t& histogram_end, const string& output)
+Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const Int_t& histogram_nbins, const Double_t& histogram_begin, const Double_t& histogram_end, const string& output)
 {
-    if (integral_begin > integral_end)
+    if (integral_begin >= integral_end)
     {
-        cout << "Error in integral range! Make sure that end > begin!" << endl;
+        cout << "**** Error in the range of integral!  Make sure that end > begin!" << endl;
         throw;
     }
 
-    if (histogram_begin > histogram_end)
+    if ((histogram_begin != 0 || histogram_end != 0) && histogram_begin >= histogram_end)
     {
-        cout << "Error in histogram range! Make sure that end > begin!" << endl;
+        cout << "**** Error in the range of NPE histogram!  Make sure that end > begin!" << endl;
         throw;
     }
 
     gStyle->SetOptStat(1111);
+    gStyle->SetOptFile(1111);
+    gStyle->SetStatX(0.89);
+    gStyle->SetStatY(0.89);
+    gStyle->SetStatBorderSize(0);
 
     TFile* inputfile = new TFile((TString) file, "READ");
     if (inputfile->IsZombie())
@@ -263,22 +267,22 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
     TTree* datatree = inputfile->Get<TTree>("DataInput");
 
     vector<Double_t>* Time = nullptr;
-    vector<Double_t>* Ch1 = nullptr;
+    vector<Double_t>* Ch = nullptr;
     timetree->SetBranchAddress("Time", &Time);
-    datatree->SetBranchAddress("Ch2", &Ch1);
+    datatree->SetBranchAddress("Ch1", &Ch);
 
     timetree->GetEntry(0);
 
     const Int_t EventNum = datatree->GetEntriesFast();
 
-    TH1D* h_QDC_Ch1 = new TH1D("h_QDC_Ch1", ";Number of PE;Entries", 200, histogram_begin, histogram_end);
+    TH1D* h_QDC_Ch1 = new TH1D("h_QDC_Ch1", ";Number of Photo-Electrons;Entries", histogram_nbins, histogram_begin, histogram_end);
 
     for (Int_t i = 0; i < EventNum; ++i)
     {
 //        if (i % 1000 == 0)
 //            cout << "Analysis of event " << setw(5) << i << " begins" << endl;
         datatree->GetEntry(i);
-        const Double_t ADC_Ch1 = GetADC(*Time, *Ch1, pedestal_end, integral_begin, integral_end);
+        const Double_t ADC_Ch1 = GetADC(*Time, *Ch, pedestal_end, integral_begin, integral_end);
         h_QDC_Ch1->Fill(ADC_Ch1 / ADC_constant);
     }
 
@@ -286,7 +290,7 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
     TCanvas* c1 = new TCanvas("c1", "c1");
     h_QDC_Ch1->SetTitle(";NPE;Entries");
     h_QDC_Ch1->Draw();
-//    c1->Print((TString) file.substr(0, file.find_last_of('.')) + ".pdf");
+//    c1->Print((TString) file.substr(0, file.find_last_of('.')) + "_NPE.pdf");
     c1->Update();
     cout << "---> NPE histogram plotted!" << endl;
 
