@@ -27,19 +27,16 @@ where `path` is the path to this directory. Then, a ROOT file with the same file
 
 **Notice:** this step is time-consuming, which requires a few minutes.
 
-### Plotting of NPE (Number of Photo-Electrons) Histogram
-With the ROOT file created, we can plot the distribution of NPE. To do this, run
+### Saving information of ADC and NPE (Number of Photo-Electrons)
+With the ROOT file created, we can calculate the ADC value and convert it to NPE. To do this, run
 ```shell
-iAna -d -p [file] -pe [pedestal_end] -ib [integral_begin] -ie [integral_end]    # 'd' stands for 'draw'
+iAna -s -p [file] -pe [pedestal_end] -ib [integral_begin] -ie [integral_end]    # 's' stands for 'save'
 ```
-where the values of `pedestal_end`, `integral_begin` and `integral_end` should be read from the waveforms.
+where the values of `pedestal_end`, `integral_begin` and `integral_end` are mandatory and should be read from the waveforms. Open the PSDATA file to have a look.
 
-Or, if you want to save the histogram to another ROOT file, run
-```shell
-iAna -d -p [file] -pe [pedestal_end] -ib [integral_begin] -ie [integral_end] -o [output_file]
-```
+After this, a ROOT file with prefix ‘ADC’ will be created in the same directory as the input ROOT file.
 
-**Notice:** after changing the configuration (especially the SiPM and pre-amplifier), remember to modify `ADC_constant` in file `Convert.cpp`! Besides, in some cases, you might also need to modify the lower and upper limits of the NPE histogram. This can also be done in `Convert.cpp`.
+**Notice:** after changing the configuration (especially the SiPM and pre-amplifier), remember to modify `ADC_constant` in file `Convert.cpp`!
 
 ### Peak Finding and Global Fitting
 This is mainly used in single-photon calibration of SiPMs, using the output file from the above step. This can be done with
@@ -53,6 +50,12 @@ Then, two figures will be displayed, one for peak finding and Gaussian fitting (
 ## Environment Set-up
 This project requires CMake version >= 3.16. Notice that different ROOT versions lead to different shapes of the histograms!
 
+If you are working on the cluster of INPAC, IHEP, etc., the environment can be easily set up by simply executing
+```shell
+source source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc11-opt/setup.sh
+```
+(This command has been commented out in `setup.sh`, but feel free to uncomment it while necessary.)
+
 With the environment set up, this project can be cloned from GitHub and compiled as usual:
 ```shell
 git clone git@github.com:phys-jychen/PicoAna.git
@@ -60,7 +63,7 @@ cd PicoAna
 mkdir build
 cd build
 cmake ..
-make -j
+make -j    # Just do it!
 source setup.sh
 ```
 
@@ -73,18 +76,24 @@ By now, the compilation has finished. Prepare the data, and have fun! :relaxed:
 
 ## Change Log
 
-### 30 July 2024
+### 30 July 2024 (Version 1.0.0)
 
 Modified the conversion process, and made sure that all CSV files are converted to ROOT.
 
-### 5 August 2024
+### 5 August 2024 (Version 1.0.1)
 
 - Added exception handling.
 - Added two options for setting the range of the NPE histogram.
 
 ### 15 November 2024
 
-Added a flag for setting the bins in filling the NPE histogram.
+- **Version 1.0.2**:
+  - Added a flag for setting the bins in filling the NPE histogram.
+- **Version 2.0.0**:
+  - Removed the step of displaying NPE histogram, and replaced it with saving the ADC and NPE values in a new ROOT file.
 
 ## To-Do
-The fitting should be carefully dealt with and some more functions might be added to this framework.
+- Skip the empty channels.
+- The fitting should be carefully dealt with.
+- Replace plotting histograms and fitting with saving data to a ROOT file (in progress).
+- Some more functions might be added to this framework.

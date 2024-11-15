@@ -15,7 +15,7 @@ Double_t Ana::FindPeaks(const Double_t* x, const Double_t* par)
 
 Int_t Ana::GlobalFit(const string& file)
 {
-    gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
 
     TFile* rootfile = new TFile((TString) file, "READ");

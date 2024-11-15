@@ -33,7 +33,7 @@ Int_t Ana::Convert(const string& path)
 
     DIR* dp;
     struct dirent* dirp;
-    size_t found = path.find_last_of('/');
+    const size_t found = path.find_last_of('/');
     const string file_path = (found == path.length() - 1) ? path.substr(0, found) : path;
     const TString rootname = file_path + ".root";
 
@@ -43,7 +43,7 @@ Int_t Ana::Convert(const string& path)
         throw;
     }
 
-    TFile* rootfile = TFile::Open(rootname, "RECREATE");
+    TFile* rootfile = new TFile(rootname, "RECREATE");
     TTree* DataInput = new TTree("DataInput", "Waveform");
     TTree* TimeInput = new TTree("TimeInput", "Time information");
 
@@ -79,8 +79,8 @@ Int_t Ana::Convert(const string& path)
             if (!DataFile)
                 continue;
 
-            const Int_t pos_id_begin = string(dirp->d_name).find_last_of('_') + 1;
-            const Int_t pos_id_end = string(dirp->d_name).find_last_of('.');
+            const size_t pos_id_begin = string(dirp->d_name).find_last_of('_') + 1;
+            const size_t pos_id_end = string(dirp->d_name).find_last_of('.');
             EventID = stoi(string(dirp->d_name).substr(pos_id_begin, pos_id_end - pos_id_begin));
 
             for (Int_t j = 0; j < skip_line; ++j)
@@ -178,8 +178,8 @@ Int_t Ana::Convert(const string& path)
             if (!DataFile)
                 continue;
 
-            const Int_t pos_id_begin = string(dirp->d_name).find_last_of('_') + 1;
-            const Int_t pos_id_end = string(dirp->d_name).find_last_of('.');
+            const size_t pos_id_begin = string(dirp->d_name).find_last_of('_') + 1;
+            const size_t pos_id_end = string(dirp->d_name).find_last_of('.');
             EventID = stoi(string(dirp->d_name).substr(pos_id_begin, pos_id_end - pos_id_begin));
 
             for (Int_t i = 0; i < skip_line; ++i)
@@ -236,7 +236,7 @@ Int_t Ana::Convert(const string& path)
     return 0;
 }
 
-Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end, const Int_t& histogram_nbins, const Double_t& histogram_begin, const Double_t& histogram_end, const string& output)
+Int_t Ana::Save(const std::string& file, const Double_t& pedestal_end, const Double_t& integral_begin, const Double_t& integral_end)
 {
     if (integral_begin >= integral_end)
     {
@@ -244,22 +244,11 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
         throw;
     }
 
-    if ((histogram_begin != 0 || histogram_end != 0) && histogram_begin >= histogram_end)
-    {
-        cout << "**** Error in the range of NPE histogram!  Make sure that end > begin!" << endl;
-        throw;
-    }
-
-    gStyle->SetOptStat(1111);
-    gStyle->SetOptFit(1111);
-    gStyle->SetStatX(0.89);
-    gStyle->SetStatY(0.89);
-    gStyle->SetStatBorderSize(0);
-
     TFile* inputfile = new TFile((TString) file, "READ");
     if (inputfile->IsZombie())
     {
         inputfile->Close();
+//        cout << "**** Error in opening file " << file << "!  Make sure that it exists!" << endl;
         throw;
     }
 
@@ -268,43 +257,44 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
 
     vector<Double_t>* Time = nullptr;
     vector<Double_t>* Ch = nullptr;
+    Int_t event;
     timetree->SetBranchAddress("Time", &Time);
+    datatree->SetBranchAddress("EventID", &event);
     datatree->SetBranchAddress("Ch1", &Ch);
+
+    const size_t found = file.find_last_of('/');
+    const TString rootname = file.substr(0, found + 1) + "ADC_" + file.substr(found + 1);
+
+    TFile* output = new TFile((TString) rootname, "RECREATE");
+    TTree* tree_out = new TTree("ADC", "Information of ADC and NPE");
+    Int_t EventID;
+    Double_t ADC, NPE;
+    tree_out->Branch("EventID", &EventID, "EventID/I");
+    tree_out->Branch("ADC", &ADC, "ADC/D");
+    tree_out->Branch("NPE", &NPE, "NPE/D");
 
     timetree->GetEntry(0);
 
-    const Int_t EventNum = datatree->GetEntriesFast();
+    const Long64_t EventNum = datatree->GetEntriesFast();
 
-    TH1D* h_QDC_Ch1 = new TH1D("h_QDC_Ch1", ";Number of Photo-Electrons;Entries", histogram_nbins, histogram_begin, histogram_end);
-
-    for (Int_t i = 0; i < EventNum; ++i)
+    for (Long64_t i = 0; i < EventNum; ++i)
     {
 //        if (i % 1000 == 0)
 //            cout << "Analysis of event " << setw(5) << i << " begins" << endl;
         datatree->GetEntry(i);
-        const Double_t ADC_Ch1 = GetADC(*Time, *Ch, pedestal_end, integral_begin, integral_end);
-        h_QDC_Ch1->Fill(ADC_Ch1 / ADC_constant);
+        EventID = event;
+        ADC = GetADC(*Time, *Ch, pedestal_end, integral_begin, integral_end);
+        NPE = ADC / ADC_constant;
+        tree_out->Fill();
     }
 
-    TApplication* app = new TApplication("app", nullptr, nullptr);
-    TCanvas* c1 = new TCanvas("c1", "c1");
-    h_QDC_Ch1->Draw();
-//    c1->Print((TString) file.substr(0, file.find_last_of('.')) + "_NPE.pdf");
-    c1->Update();
-    cout << "---> NPE histogram plotted!" << endl;
+    output->cd();
+    tree_out->Write();
+    delete tree_out;
+    output->Close();
+    delete output;
+    inputfile->Close();
+    delete inputfile;
 
-    TRootCanvas* rc = (TRootCanvas*) c1->GetCanvasImp();
-    rc->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
-
-    if (!output.empty())
-    {
-        TFile* rootfile = new TFile((TString) output, "RECREATE");
-        rootfile->cd();
-        h_QDC_Ch1->Write("", TObject::kWriteDelete);
-        rootfile->Close();
-        cout << "---> ROOT file " << output << " saved!" << endl;
-    }
-
-    app->Run();
     return 0;
 }
