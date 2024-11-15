@@ -288,7 +288,6 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
 
     TApplication* app = new TApplication("app", nullptr, nullptr);
     TCanvas* c1 = new TCanvas("c1", "c1");
-    h_QDC_Ch1->SetTitle(";NPE;Entries");
     h_QDC_Ch1->Draw();
 //    c1->Print((TString) file.substr(0, file.find_last_of('.')) + "_NPE.pdf");
     c1->Update();
