@@ -251,7 +251,7 @@ Int_t Ana::Draw(const string& file, const Double_t& pedestal_end, const Double_t
     }
 
     gStyle->SetOptStat(1111);
-    gStyle->SetOptFile(1111);
+    gStyle->SetOptFit(1111);
     gStyle->SetStatX(0.89);
     gStyle->SetStatY(0.89);
     gStyle->SetStatBorderSize(0);
